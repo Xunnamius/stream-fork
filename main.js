@@ -73,17 +73,21 @@ class Fork extends Writable {
     if (!options || !options.ignoreErrors) {
       this.outputs.forEach(stream => stream.on('error', error => {
         this.outputs = this.outputs.filter(s => s !== stream);
-        if (this.startedWriting) return;
-        this.emit('error', error);
+        //if (this.startedWriting) return;
+        if(this.outputs.length !== 0) {
+          this.emit('error', error);
+        } else {
+          this.destroy(error);
+        }
       }));
     }
   }
   _write(chunk, encoding, callback) {
-    this.startedWriting = true;
+    //this.startedWriting = true;
     Promise.all(this.outputs.map(waitForWrite(chunk, encoding))).then(this.processResults(callback));
   }
   _final(callback) {
-    this.startedWriting = true;
+    //this.startedWriting = true;
     Promise.all(this.outputs.map(waitForEnd)).then(this.processResults(callback));
   }
   isEmpty() {
